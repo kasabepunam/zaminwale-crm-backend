@@ -1,3 +1,4 @@
+// backend/routes/customerRoutes.js
 import express from "express";
 import Customer from "../models/Customer.js"; // Customer model
 const router = express.Router();
@@ -20,70 +21,17 @@ router.get("/", async (req, res) => {
 // ---------------------
 router.post("/", async (req, res) => {
     try {
-        const {
-            date,
-            customerId,
-            name,
-            phone,
-            alternatePhone,
-            address,
-            panCard,
-            aadhaarCard,
-            guntha,
-            rate,
-            totalAmount,
-            bookingAmount,
-            mouCharge,
-            installmentAmount,
-            installmentNo,
-            receivedAmount,
-            balanceAmount,
-            stampDutyCharges,
-            location,
-            village,
-            bankName,
-            chequeNo,
-            chequeDate,
-            clearDate,
-            remark,
-            saleDeed,
-            cancelBooking,
-            employeeId,
-            paymentDate,
-            nextDueDate,
-        } = req.body;
+        // Normalize array fields
+        const normalizeArray = (field) => Array.isArray(field) ? field : JSON.parse(field || "[]");
 
         const newCustomer = new Customer({
-            date,
-            customerId,
-            name,
-            phone,
-            alternatePhone,
-            address,
-            panCard,
-            aadhaarCard,
-            guntha,
-            rate,
-            totalAmount,
-            bookingAmount,
-            mouCharge,
-            installmentAmount,
-            installmentNo,
-            receivedAmount,
-            balanceAmount,
-            stampDutyCharges,
-            location,
-            village,
-            bankName,
-            chequeNo,
-            chequeDate,
-            clearDate,
-            remark,
-            saleDeed: saleDeed || false,
-            cancelBooking: cancelBooking || false,
-            employeeId,
-            paymentDate,
-            nextDueDate,
+            ...req.body,
+            callingBy: normalizeArray(req.body.callingBy),
+            siteVisitBy: normalizeArray(req.body.siteVisitBy),
+            attendingBy: normalizeArray(req.body.attendingBy),
+            closingBy: normalizeArray(req.body.closingBy),
+            saleDeed: req.body.saleDeed || false,
+            cancelBooking: req.body.cancelBooking || false,
         });
 
         await newCustomer.save();
@@ -99,11 +47,24 @@ router.post("/", async (req, res) => {
 // ---------------------
 router.put("/:id", async (req, res) => {
     try {
+        const normalizeArray = (field) => Array.isArray(field) ? field : JSON.parse(field || "[]");
+
+        const updatedData = {
+            ...req.body,
+            callingBy: normalizeArray(req.body.callingBy),
+            siteVisitBy: normalizeArray(req.body.siteVisitBy),
+            attendingBy: normalizeArray(req.body.attendingBy),
+            closingBy: normalizeArray(req.body.closingBy),
+            saleDeed: req.body.saleDeed || false,
+            cancelBooking: req.body.cancelBooking || false,
+        };
+
         const updatedCustomer = await Customer.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updatedData,
             { new: true, runValidators: true }
         );
+
         if (!updatedCustomer) return res.status(404).json({ error: "Customer not found" });
         res.status(200).json(updatedCustomer);
     } catch (err) {
