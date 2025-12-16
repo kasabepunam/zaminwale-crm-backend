@@ -2,11 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 import projectRoutes from "./routes/projects.js";
-
 const customerRoutes = require("./routes/customerRoutes");
-
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 
 // Middleware
 app.use(cors({ origin: "http://localhost:3000" }));
@@ -59,6 +57,15 @@ app.post("/api/customers", async (req, res) => {
         console.error("Error saving customer:", err);
         res.status(500).json({ error: "Failed to save customer" });
     }
+});
+// ✅ ACTIVE CUSTOMERS ENDPOINT
+app.get("/api/customers/active", async (req, res) => {
+  try {
+    const activeCustomers = await Customer.find({ status: "Active Customer" });
+    res.json(activeCustomers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/customers", async (req, res) => {
